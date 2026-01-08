@@ -58,7 +58,7 @@ RUN sed --in-place '/en_US.UTF-8/s/^#//' -i /etc/locale.gen \
     && /usr/sbin/locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8  
+ENV LC_ALL en_US.UTF-8
 
 # Install Wine
 RUN set -x \
@@ -68,15 +68,15 @@ RUN set -x \
                libwine \
                libwine:i386 \
                fonts-wine \
-               winehq-stable \
+               wine \
                xauth \
                xvfb \
     # Clean TMP, apt-get cache and other stuff to make the image smaller
     && apt-get clean autoclean \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
-               
-# Run Steamcmd and install the Conan Exiles Dedicated Server              
+
+# Run Steamcmd and install the Conan Exiles Dedicated Server
 RUN set -x \
     && su steam -c \
           "${STEAMCMDDIR}/steamcmd.sh \
@@ -96,7 +96,13 @@ ENV CONAN_ARGS -log -nosteam
 # Set Entrypoint
 # 1. Update server
 # 2. Start the server
+
+RUN mkdir -p /root
+
 COPY ./startup.sh /root/startup.sh
+
+RUN chmod +x /root/startup.sh
+
 ENTRYPOINT ["/root/startup.sh"]
 
 EXPOSE 27015/udp 7777/udp 7778/udp
