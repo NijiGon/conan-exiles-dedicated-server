@@ -5,12 +5,9 @@ services:
     container_name: conan
     build: .
     restart: "unless-stopped"
-    network_mode: host
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     volumes:
       - conan_data:/home/steam/conan-dedicated
+      - ./startup.sh:/root/startup.sh
     env_file:
       - .env
     environment:
@@ -22,6 +19,9 @@ services:
       - 7777:7777/udp
       - 7778:7778/udp
       - 27015:27015/udp
+      - 27015:27015/tcp
+    cpus: 4.0
+    mem_limit: 12g
 
 volumes:
   conan_data:

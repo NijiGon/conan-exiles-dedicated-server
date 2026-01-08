@@ -91,7 +91,7 @@ WORKDIR $STEAMAPPDIR
 VOLUME $STEAMAPPDIR
 
 # Parameters for the Conan process
-ENV CONAN_ARGS -log -nosteam
+ENV CONAN_ARGS -log
 
 # Set Entrypoint
 # 1. Update server
@@ -105,4 +105,4 @@ RUN chmod +x /root/startup.sh
 
 ENTRYPOINT ["/root/startup.sh"]
 
-EXPOSE 27015/udp 7777/udp 7778/udp
+EXPOSE 27015/udp 27015/tcp 7777/udp 7778/udp

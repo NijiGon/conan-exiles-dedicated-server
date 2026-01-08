@@ -99,6 +99,13 @@ ClanMaxSize=${CLAN_MAX_SIZE:-22}
 HarvestAmountMultiplier=${HARVEST_AMOUNT_MULTIPLIER:-1}
 ResourceRespawnSpeedMultiplier=${RESOURCE_RESPAWN_SPEED_MULTIPLIER:-1}
 EverybodyCanLootCorpse=${EVERYBODY_CAN_LOOT_CORPSE:-False}
+NetServerMaxTickRate=30
+ServerName=${SERVER_NAME:-Conan Exiles Server}
+ServerPassword=${SERVER_PASSWORD:-}
+ServerRegion=${SERVER_REGION:-256}
+ServerIsInLobby=${SERVER_IS_IN_LOBBY:-True}
+ServerVACEnabled=${SERVER_VAC_ENABLED:-False}
+ServerBattlEyeRequired=${SERVER_BATTLEYE_REQUIRED:-False}
 EOF
 
 echo "
@@ -122,9 +129,9 @@ GAMEMODLIST=${GAMEMODDIR}/modlist.txt
 if [ ! -z "$CONAN_MODS" ]; then
     echo "Using mods from CONAN_MODS environment variable"
     echo "$CONAN_MODS" | tr ',' '\n' > ${STEAMAPPDIR}/modlist.txt
-elif [ ! -f ${STEAMAPPDIR}/modlist.txt ]; then
-    echo "No modlist, creating empty ${STEAMAPPDIR}/modlist.txt"
-    touch ${STEAMAPPDIR}/modlist.txt
+else
+    echo "No CONAN_MODS set, creating empty modlist"
+    echo "" > ${STEAMAPPDIR}/modlist.txt
 fi
 
 # Clear server modlist so we don't end up with duplicates
@@ -148,15 +155,6 @@ do
     MODDIR=/home/steam/Steam/steamapps/workshop/content/${STEAMSERVERID}/${MODID}/
     find "${MODDIR}" -iname '*.pak' >> ${GAMEMODLIST}
 done
-
-
-echo "
--------------------------------------
-Configuring Wine networking
--------------------------------------
-"
-su steam -c "wine reg add 'HKEY_CURRENT_USER\Software\Wine\WinINet' /v ProxyEnable /t REG_DWORD /d 0 /f"
-su steam -c "wine reg add 'HKEY_CURRENT_USER\Software\Wine\WinINet' /v UseSystemProxies /t REG_DWORD /d 1 /f"
 
 echo "
 -------------------------------------
