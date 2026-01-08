@@ -6,6 +6,9 @@ services:
     build: .
     restart: "unless-stopped"
     network_mode: host
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - conan_data:/home/steam/conan-dedicated
     env_file:

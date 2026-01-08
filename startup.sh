@@ -152,7 +152,15 @@ done
 
 echo "
 -------------------------------------
+Configuring Wine networking
+-------------------------------------
+"
+su steam -c "wine reg add 'HKEY_CURRENT_USER\Software\Wine\WinINet' /v ProxyEnable /t REG_DWORD /d 0 /f"
+su steam -c "wine reg add 'HKEY_CURRENT_USER\Software\Wine\WinINet' /v UseSystemProxies /t REG_DWORD /d 1 /f"
+
+echo "
+-------------------------------------
 Starting server
 -------------------------------------
 "
-su steam -c  "xvfb-run --auto-servernum wine ${STEAMAPPDIR}/ConanSandboxServer.exe -log"
+su steam -c  "xvfb-run --auto-servernum wine ${STEAMAPPDIR}/ConanSandboxServer.exe ${CONAN_ARGS:--log}"
