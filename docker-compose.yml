@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  conan:
+    build: .
+    container_name: conan-exiles
+    env_file: .env
+    volumes:
+      - conan-data:/opt/conan
+    ports:
+      - "${GAME_PORT}:7777/udp"
+      - "${STEAM_PORT}:7778/udp"
+      - "${QUERY_PORT}:27015/udp"
+      - "${QUERY_PORT}:27015/tcp"
+    restart: unless-stopped
+
+volumes:
+  conan-data:
