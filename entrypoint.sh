@@ -33,6 +33,28 @@ if [ -n "$MOD_IDS" ]; then
         +quit
     fi
   done
+  
+  # Copy mods to the correct location
+  echo "Copying mods to server directory..."
+  mkdir -p "$SERVER_DIR/ConanSandbox/Mods"
+  for mod_id in "${MODS[@]}"; do
+    mod_id=$(echo "$mod_id" | xargs)
+    if [ -n "$mod_id" ]; then
+      WORKSHOP_DIR="$SERVER_DIR/steamapps/workshop/content/440900/$mod_id"
+      if [ -d "$WORKSHOP_DIR" ]; then
+        # Find the .pak file in the workshop directory
+        PAK_FILE=$(find "$WORKSHOP_DIR" -name "*.pak" -type f | head -1)
+        if [ -n "$PAK_FILE" ]; then
+          echo "Copying mod $mod_id: $(basename "$PAK_FILE")"
+          cp "$PAK_FILE" "$SERVER_DIR/ConanSandbox/Mods/$mod_id.pak"
+        else
+          echo "Warning: No .pak file found for mod $mod_id"
+        fi
+      else
+        echo "Warning: Workshop directory not found for mod $mod_id"
+      fi
+    fi
+  done
 fi
 
 # Create config folder
