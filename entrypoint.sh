@@ -7,15 +7,33 @@ SERVER_DIR=/opt/conan
 # Only install if not already present
 if [ ! -f "$SERVER_DIR/ConanSandboxServer.exe" ]; then
   echo "Installing Conan Exiles server..."
+  $STEAMCMDDIR/steamcmd.sh \
+    +force_install_dir $SERVER_DIR \
+    +login anonymous \
+    +@sSteamCmdForcePlatformType windows \
+    +app_update $STEAMAPPID validate \
+    +quit
+else
+  echo "Server already installed."
 fi
 
-# Install Windows Conan Exiles server via SteamCMD
-$STEAMCMDDIR/steamcmd.sh \
-  +force_install_dir $SERVER_DIR \
-  +login anonymous \
-  +@sSteamCmdForcePlatformType windows \
-  +app_update $STEAMAPPID validate \
-  +quit
+# Install/Update mods
+if [ -n "$MOD_IDS" ]; then
+  echo "Installing/updating mods..."
+  IFS=',' read -ra MODS <<< "$MOD_IDS"
+  for mod_id in "${MODS[@]}"; do
+    mod_id=$(echo "$mod_id" | xargs)
+    if [ -n "$mod_id" ]; then
+      echo "Downloading mod: $mod_id"
+      $STEAMCMDDIR/steamcmd.sh \
+        +force_install_dir $SERVER_DIR \
+        +login anonymous \
+        +@sSteamCmdForcePlatformType windows \
+        +workshop_download_item 440900 $mod_id validate \
+        +quit
+    fi
+  done
+fi
 
 # Create config folder
 CONF_DIR="$SERVER_DIR/ConanSandbox/Saved/Config/WindowsServer"
@@ -106,6 +124,21 @@ MinionDamageTakenMultiplier=${MINION_DAMAGE_TAKEN}
 PlayerKnockbackMultiplier=${PLAYER_KNOCKBACK}
 NPCKnockbackMultiplier=${NPC_KNOCKBACK}
 EOF
+
+# Generate modlist.txt
+MODLIST_FILE="$SERVER_DIR/ConanSandbox/Mods/modlist.txt"
+mkdir -p "$(dirname "$MODLIST_FILE")"
+> "$MODLIST_FILE"
+if [ -n "$MOD_IDS" ]; then
+  IFS=',' read -ra MODS <<< "$MOD_IDS"
+  for mod_id in "${MODS[@]}"; do
+    mod_id=$(echo "$mod_id" | xargs)
+    if [ -n "$mod_id" ]; then
+      echo "*$mod_id.pak" >> "$MODLIST_FILE"
+    fi
+  done
+  echo "Modlist created with $(wc -l < "$MODLIST_FILE") mods"
+fi
 
 # Start server with Wine
 xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' \
