@@ -125,6 +125,28 @@ PlayerKnockbackMultiplier=${PLAYER_KNOCKBACK}
 NPCKnockbackMultiplier=${NPC_KNOCKBACK}
 EOF
 
+# Generate Engine.ini
+cat > "$CONF_DIR/Engine.ini" <<EOF
+[OnlineSubsystem]
+ServerName=${SERVER_NAME}
+ServerPassword=${SERVER_PASSWORD}
+
+[/Script/Engine.GameSession]
+MaxPlayers=${MAX_PLAYERS}
+
+[/Script/OnlineSubsystemUtils.IpNetDriver]
+MaxClientRate=${MAX_CLIENT_RATE}
+MaxInternetClientRate=${MAX_INTERNET_CLIENT_RATE}
+NetServerMaxTickRate=${TICK_RATE}
+LanServerMaxTickRate=${TICK_RATE}
+EOF
+
+# Generate Game.ini (empty by default, users can customize)
+cat > "$CONF_DIR/Game.ini" <<EOF
+[/Script/Engine.GameSession]
+MaxPlayers=${MAX_PLAYERS}
+EOF
+
 # Generate modlist.txt
 MODLIST_FILE="$SERVER_DIR/ConanSandbox/Mods/modlist.txt"
 mkdir -p "$(dirname "$MODLIST_FILE")"
