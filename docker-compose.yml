@@ -13,6 +13,7 @@ services:
       - "${STEAM_PORT}:7778/udp"
       - "${QUERY_PORT}:27015/udp"
       - "${QUERY_PORT}:27015/tcp"
+      - "${RCON_PORT}:27020/tcp"
     restart: unless-stopped
 
 volumes:
