@@ -24,40 +24,39 @@ done
 mkdir -p "$MOD_DIR"
 
 # Remove unlisted mods in Mods folder
+WORKSHOP_BASE="$SERVER_DIR/steamapps/workshop/content/440900"
+
 for existing_mod in "$MOD_DIR"/*.pak; do
     [ ! -f "$existing_mod" ] && continue
     mod_file=$(basename "$existing_mod")
     mod_id="${mod_file%.pak}"
+
     if [[ ! " ${MODS[*]} " =~ " $mod_id " ]]; then
         echo "Removing unlisted mod: $mod_id"
-        rm -f "$existing_mod"
+        rm -f "$MOD_DIR/$mod_id.pak"
+        rm -rf "$WORKSHOP_BASE/$mod_id"
     fi
 done
 
-# Download mods in parallel with caching
+# Download mods serially with caching
 if [ ${#MODS[@]} -gt 0 ]; then
     echo "Installing/updating mods..."
     for mod_id in "${MODS[@]}"; do
         [ -z "$mod_id" ] && continue
 
         WORKSHOP_DIR="$SERVER_DIR/steamapps/workshop/content/440900/$mod_id"
-        WORKSHOP_PAK=$(find "$WORKSHOP_DIR" -name "*.pak" -type f | head -1)
         MOD_PAK="$MOD_DIR/$mod_id.pak"
 
         # Skip download if .pak exists in MOD_DIR (cached)
-        if [ -f "$MOD_PAK" ]; then
-            echo "Mod $mod_id already exists, skipping download"
-            continue
-        fi
+        # if [ -f "$MOD_PAK" ]; then
+        #     echo "Mod $mod_id already exists, skipping download"
+        #     continue
+        # fi
 
-        # Download in background if not cached
-        (
-            echo "Downloading mod: $mod_id"
-            run_steamcmd "+@sSteamCmdForcePlatformType windows" \
-                         "+workshop_download_item 440900 $mod_id validate"
-        ) &
+        echo "Downloading mod: $mod_id"
+        run_steamcmd "+@sSteamCmdForcePlatformType windows" \
+                     "+workshop_download_item 440900 $mod_id validate"
     done
-    wait
     echo "All mods downloaded."
 fi
 
@@ -205,10 +204,20 @@ done
 echo "Modlist created with $(wc -l < "$MOD_DIR/modlist.txt") mods"
 
 # Start server
-xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' \
-    wine "$SERVER_DIR/ConanSandboxServer.exe" \
-    ${MAP}?listen \
-    -Port=${GAME_PORT} \
-    -QueryPort=${QUERY_PORT} \
-    -MaxPlayers=${MAX_PLAYERS} \
-    -log
+export WINEDEBUG=-all
+export WINEESYNC=1
+export WINEFSYNC=0
+export SDL_VIDEODRIVER=x11
+
+ulimit -n 1048576
+
+xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+  wine64 "$SERVER_DIR/ConanSandboxServer.exe" \
+  ${MAP}?listen \
+  -Port=${GAME_PORT} \
+  -QueryPort=${QUERY_PORT} \
+  -MaxPlayers=${MAX_PLAYERS} \
+  -log \
+  -NoSteamClient \
+  -NoBattlEye \
+  -USEALLAVAILABLECORES
