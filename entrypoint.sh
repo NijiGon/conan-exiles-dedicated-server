@@ -211,6 +211,7 @@ export SDL_VIDEODRIVER=x11
 
 ulimit -n 1048576
 
+# Start server
 xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
   wine64 "$SERVER_DIR/ConanSandboxServer.exe" \
   ${MAP}?listen \
@@ -220,4 +221,36 @@ xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
   -log \
   -NoSteamClient \
   -NoBattlEye \
-  -USEALLAVAILABLECORES
+  -USEALLAVAILABLECORES &
+
+SERVER_PID=$!
+
+# RTLP watchdog (background)
+LOG_FILE="$SERVER_DIR/ConanSandbox/Saved/Logs/ConanSandbox.log"
+CHECK_INTERVAL=60
+RTLP_THRESHOLD=50
+
+(
+  last_count=0
+  while true; do
+    sleep $CHECK_INTERVAL
+
+    count=$(grep -c "RtlpWaitForCriticalSection" "$LOG_FILE" 2>/dev/null || true)
+
+    if [ "$count" -gt "$last_count" ]; then
+      delta=$((count - last_count))
+      if [ "$delta" -ge "$RTLP_THRESHOLD" ]; then
+        echo "RTLP spam detected ($delta/$CHECK_INTERVAL s), killing server"
+        kill -TERM "$SERVER_PID"
+        sleep 10
+        kill -KILL "$SERVER_PID" 2>/dev/null || true
+        exit 1
+      fi
+    fi
+
+    last_count=$count
+  done
+) &
+
+# Wait for server to exit
+wait "$SERVER_PID"
