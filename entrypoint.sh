@@ -205,7 +205,7 @@ echo "Modlist created with $(wc -l < "$MOD_DIR/modlist.txt") mods"
 
 # Start server
 export WINEDEBUG=-all
-export WINEESYNC=1
+export WINEESYNC=0
 export WINEFSYNC=0
 export SDL_VIDEODRIVER=x11
 
