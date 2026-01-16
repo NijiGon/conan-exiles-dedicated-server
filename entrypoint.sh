@@ -209,8 +209,6 @@ export WINEESYNC=1
 export WINEFSYNC=0
 export SDL_VIDEODRIVER=x11
 
-ulimit -n 1048576
-
 # Start server
 xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
   wine64 "$SERVER_DIR/ConanSandboxServer.exe" \
